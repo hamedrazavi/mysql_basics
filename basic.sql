@@ -3,6 +3,7 @@ create database test;
 show databases;
 use test;
 
+#create a table in the current database
 create table students(
 first_name varchar(30) not null,
 last_name varchar(30) not null,
@@ -18,7 +19,10 @@ date_entered timestamp,
 lunch_cost float null,
 student_id int unsigned not null auto_increment primary key
 );
+
 show databases;
+
+#show the columns names, types, conditions (e.g., null or not null)
 describe students;
 insert into students values('Dale', 'Cooper', 'dcooper@aol.com',
 '123 Main St', 'Yakima', 'WA', 98901, '792-223-8901', "1959-2-22",
@@ -76,8 +80,12 @@ absence_date date not null,
 primary key(student_id, absence_date)
 );
 
+#Adding a new row to an existing table
 alter table tests add max_score int not null after test_type;
 describe tests;
+
+alter table scores change event_id test_id
+int unsigned not null;
 
 insert into tests values
 ('2014-8-25', 'Q', 15, 1, NULL),
@@ -87,6 +95,7 @@ insert into tests values
 ('2014-8-27', 'Q', 15, 4, NULL),
 ('2014-8-29', 'T', 30, 4, NULL);
 
+#show all rows (data) of the table
 select * from tests;
 show tables; 
 
@@ -162,21 +171,83 @@ insert into absences values
 
 select * from students;
 
+#Conditional selection
 select * from students where state = 'MI';
 
 select first_name, last_name
 from students
 order by last_name;
 
+#list in an order (e.g. ascending or descending)
 select first_name, last_name, state
 from students
 order by state desc, last_name asc;
 
-select * from students;
-
 rename table class to classes;
-
 show tables;
+
+#year() function 
+select first_name, last_name, birth_date
+from students
+where year(birth_date) > 1960;
+
+select last_name, state, birth_date
+from students
+where day(birth_date) >=10 && (state = 'MI' || state = 'CA');
+
+#show unique values of a column (equivalent to pd.unique() on pandas)
+select distinct state
+from students;
+
+select count(*)
+from students;
+
+select count(*)
+from students
+where sex = 'M';
+
+select sex, count(*)
+from students
+group by sex;
+
+select month(birth_date) as 'Month', count(*)
+from students
+group by Month
+order by Month;
+
+select state, count(*) as 'Amount'
+from students
+group by state
+having Amount > 1;
+
+select 
+test_id as 'Test',
+min(score) as min,
+max(score) as max,
+max(score) - min(score) as 'range', #note range is a built-in function so it is quoted.
+sum(score) as total,
+avg(score) as average2
+from scores
+group by test_id;
+
+#collecting information from multiple tables
+select concat(students.first_name, " ", students.last_name)
+as name,
+tests.test_date, scores.score, tests.max_score
+from students, scores, tests
+where test_date = '2014-08-25'
+and tests.test_id = scores.test_id
+and scores.student_id = students.student_id;
+
+
+select concat(students.first_name, " ", students.last_name)
+as 'Name',
+count(absences.absence_date) as Absences
+from students, absences
+where students.student_id = absences.student_id
+group by students.student_id;
+
+
 
 
 
